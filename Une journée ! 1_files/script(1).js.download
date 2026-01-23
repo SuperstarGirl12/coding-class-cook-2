@@ -1,0 +1,933 @@
+/**
+ * @file
+ * A JavaScript file
+ */
+
+// JavaScript should be made compatible with libraries other than jQuery by
+// wrapping it with an "anonymous closure". See:
+// - https://drupal.org/node/1446420
+// - http://www.adequatelygood.com/2010/3/JavaScript-Module-Pattern-In-Depth
+(function (Drupal, $) { 
+
+  'use strict';
+	
+	function PrintElem(elem) {
+    var mywindow = window.open('', 'PRINT', 'height=400,width=600');
+
+    mywindow.document.write('<html><head>' + '<link rel="stylesheet" media="all" href="/modules/tv5/modules/exercice/css/print.css">' + '</head><body>');
+    mywindow.document.write(document.getElementById(elem).innerHTML);
+    mywindow.document.write('</body></html>');
+    mywindow.document.close();
+		setTimeout(function () {
+			mywindow.focus();
+			mywindow.print();
+			mywindow.close();
+		}, 1000);
+  }
+
+  // To understand behaviors, see https://drupal.org/node/756722#behaviors
+  Drupal.behaviors.exercice_behavior = {
+    attach: function (context, settings) {
+			// print button and position buttons for help
+			if((typeof(context.className) != 'undefined') && (context.className == 'top-display-aide')) {
+				// print button
+				if((typeof drupalSettings.exercice_interface != 'undefined') && (typeof drupalSettings.exercice_interface.btn_help_print != 'undefined')) {
+					$('.top-display-aide .tdta-left').append('<button type="button" class="exo-help-print" data-placement="bottom" data-toggle="tooltip" data-trigger="hover" title="' + drupalSettings.exercice_interface.btn_help_print + '">' + drupalSettings.exercice_interface.btn_help_print + '</button>');
+					$('.exo-help-print').click(function() {
+						var $this = $(this);
+						var $display = $this.parent().parent().parent().find('.content-exo-aide');
+						if($display.length) {
+							PrintElem($display.attr('id'));
+						}
+					});
+					$("[data-toggle=tooltip]").tooltip();
+				}
+				
+				// position buttons
+				if((typeof drupalSettings.exercice_interface != 'undefined') && (typeof drupalSettings.exercice_interface.btn_stick_below != 'undefined') && (typeof drupalSettings.exercice_interface.btn_stick_left != 'undefined') && (typeof drupalSettings.exercice_interface.btn_stick_right != 'undefined')) {
+					
+					$('.top-display-aide .tdta-right').append('<button type="button" class="exo-stick exo-stick-below active" data-placement="bottom" data-toggle="tooltip" data-trigger="hover" title="' + drupalSettings.exercice_interface.btn_stick_below + '">' + drupalSettings.exercice_interface.btn_stick_below + '</button>');
+					
+					$('.top-display-aide .tdta-right').append('<button type="button" class="exo-stick exo-stick-left" data-placement="bottom" data-toggle="tooltip" data-trigger="hover" title="' + drupalSettings.exercice_interface.btn_stick_left + '">' + drupalSettings.exercice_interface.btn_stick_left + '</button>');
+					
+					$('.top-display-aide .tdta-right').append('<button type="button" class="exo-stick exo-stick-right" data-placement="bottom" data-toggle="tooltip" data-trigger="hover" title="' + drupalSettings.exercice_interface.btn_stick_right + '">' + drupalSettings.exercice_interface.btn_stick_right + '</button>');
+					
+					$("[data-toggle=tooltip]").tooltip();
+					
+					// close button
+					var $close_btn = $('<button></button>')
+						.addClass('close-exo-stick')
+						.text(Drupal.t('Close'))
+						.appendTo($('.top-display-aide .tdta-right'))
+						.bind('click', function() {
+							$('.zone-display-aide').removeClass('show');
+							$('.help-page-btn').removeClass('active');
+						});
+					
+					// click position left
+					$('.top-display-aide .exo-stick-left').click(function() {
+						$('.top-display-aide .exo-stick').removeClass('active');
+						$('.top-display-aide .exo-stick-left').addClass('active');
+						$('.zone-display-aide').removeClass('right-fixed below');
+						$('.zone-display-aide').addClass('left-fixed');	
+					});
+
+					// click position right
+					$('.top-display-aide .exo-stick-right').click(function() {
+						$('.top-display-aide .exo-stick').removeClass('active');
+						$('.top-display-aide .exo-stick-right').addClass('active');
+						$('.zone-display-aide').removeClass('left-fixed below');
+						$('.zone-display-aide').addClass('right-fixed');
+					});
+
+					// click position below
+					$('.top-display-aide .exo-stick-below').click(function() {
+						$('.top-display-aide .exo-stick').removeClass('active');
+						$('.top-display-aide .exo-stick-below').addClass('active');
+						$('.zone-display-aide').removeClass('left-fixed right-fixed');
+						$('.zone-display-aide').addClass('below');
+					});	
+				}
+			}
+
+			// print button and position buttons for transcription
+			if((typeof(context.className) != 'undefined') && (context.className == 'top-display-transcription')) {
+				// active jwplayer_authot
+				var data_media_id = $(context).parent().data('media-id');
+				var $trans_jwplayer = $('.field--name-field-media .field--item[data-media-id="' + data_media_id + '"]').find('.tv5monde_player'); // .jwplayer
+				if($trans_jwplayer.length) {
+					var jwplayer_id = $trans_jwplayer.attr('data-guid');
+					jwplayer_id = 'ldr-guid-' + jwplayer_id;
+					jwplayer_authot(jwplayer_id, 'exo-transcription-' + data_media_id);
+				}
+				
+				// print button
+				if((typeof drupalSettings.exercice_interface != 'undefined') && (typeof drupalSettings.exercice_interface.btn_transcription_print != 'undefined')) {
+					$(context).find('.tdt-left').append('<button type="button" class="exo-help-print" data-placement="bottom" data-toggle="tooltip" data-trigger="hover" title="' + drupalSettings.exercice_interface.btn_transcription_print + '">' + drupalSettings.exercice_interface.btn_transcription_print + '</button>');
+					$('.exo-help-print').click(function() {
+						var $this = $(this);
+						var $display = $this.parent().parent().parent().find('.content-exo-transcription');
+						if($display.length) {
+							PrintElem($display.attr('id'));
+						}
+					});
+					$("[data-toggle=tooltip]").tooltip();
+				}
+				
+				// position buttons
+				if((typeof drupalSettings.exercice_interface != 'undefined') && (typeof drupalSettings.exercice_interface.btn_stick_below != 'undefined') && (typeof drupalSettings.exercice_interface.btn_stick_left != 'undefined') && (typeof drupalSettings.exercice_interface.btn_stick_right != 'undefined')) {
+					$(context).find('.tdt-right').append('<button type="button" class="exo-stick exo-stick-below active" data-placement="bottom" data-toggle="tooltip" data-trigger="hover" title="' + drupalSettings.exercice_interface.btn_stick_below + '">' + drupalSettings.exercice_interface.btn_stick_below + '</button>');
+						
+					$(context).find('.tdt-right').append('<button type="button" class="exo-stick exo-stick-left" data-placement="bottom" data-toggle="tooltip" data-trigger="hover" title="' + drupalSettings.exercice_interface.btn_stick_left + '">' + drupalSettings.exercice_interface.btn_stick_left + '</button>');
+					
+					$(context).find('.tdt-right').append('<button type="button" class="exo-stick exo-stick-right" data-placement="bottom" data-toggle="tooltip" data-trigger="hover" title="' + drupalSettings.exercice_interface.btn_stick_right + '">' + drupalSettings.exercice_interface.btn_stick_right + '</button>');
+					
+					$("[data-toggle=tooltip]").tooltip();
+					
+					// close button
+					var $close_btn = $('<button></button>')
+						.addClass('close-exo-stick')
+						.text(Drupal.t('Close'))
+						.appendTo($(context).find('.tdt-right'))
+						.bind('click', function() {
+							var $this = $(this);
+							$this.parent().parent().parent().removeClass('show');
+							$('.trans-btn').removeClass('active');
+						});
+					
+					// click position left
+					$(context).find('.exo-stick-left').click(function() {
+						$('.top-display-transcription .exo-stick').removeClass('active');
+						$('.top-display-transcription .exo-stick-left').addClass('active');
+						$('.zone-display-multi-trans li').removeClass('right-fixed below');
+						$('.zone-display-multi-trans li').addClass('left-fixed');	
+					});
+
+					// click position right
+					$(context).find('.exo-stick-right').click(function() {
+						$('.top-display-transcription .exo-stick').removeClass('active');
+						$('.top-display-transcription .exo-stick-right').addClass('active');
+						$('.zone-display-multi-trans li').removeClass('left-fixed below');
+						$('.zone-display-multi-trans li').addClass('right-fixed');
+					});
+
+					// click position below
+					$(context).find('.exo-stick-below').click(function() {
+						$('.top-display-transcription .exo-stick').removeClass('active');
+						$('.top-display-transcription .exo-stick-below').addClass('active');
+						$('.zone-display-multi-trans li').removeClass('left-fixed right-fixed');
+						$('.zone-display-multi-trans li').addClass('below');
+					});	
+				}	
+			}	
+			
+			// translation transcription
+			if((typeof drupalSettings.exercice_interface != 'undefined') && (typeof drupalSettings.exercice_interface.btn_transcription_translate != 'undefined') && (typeof(context.className) != 'undefined') && (context.className == 'content-exo-transcription') && $(context).find(".transcription-translation").length) {
+				
+				$(context).parent().find('.tdt-left').prepend('<button type="button" class="exo-transcription-translate" data-placement="bottom" data-toggle="tooltip" data-trigger="hover" title="' + drupalSettings.exercice_interface.btn_transcription_translate + '">' + drupalSettings.exercice_interface.btn_transcription_translate + '</button>');
+				$("[data-toggle=tooltip]").tooltip();
+				$(context).parent().find('.exo-transcription-translate').click(function() {
+					var $this = $(this);
+					if ($this.hasClass("translation")) {
+						$this.removeClass("translation");
+						$this.parent().parent().parent().find(".transcription-default").show();
+						$this.parent().parent().parent().find(".transcription-translation").hide();
+					} else {
+						$this.addClass("translation");
+						$this.parent().parent().parent().find(".transcription-translation").show();
+					}
+				});		
+			}
+			
+			// case embed, disable links in help
+			if((typeof drupalSettings.embed_serie != 'undefined') && (typeof(context.className) != 'undefined') && (context.className == 'content-exo-aide') ) {
+				$('.content-exo-aide a').click(
+					function(e){
+						e.preventDefault();
+						e.stopPropagation();	
+					}
+				);
+				$('.content-exo-aide a').each(
+					function(){
+						var $this = $(this);
+						$this.attr('data-placement', 'bottom');
+						$this.attr('data-toggle', 'tooltip');
+						$this.attr('data-trigger', 'hover');
+						$this.attr('title', drupalSettings.disabled_links_text);
+					}
+				);
+				$("[data-toggle=tooltip]").tooltip();
+			}
+			// case embed, disable links in transcription
+			if((typeof drupalSettings.embed_serie != 'undefined') && (typeof(context.className) != 'undefined') && (context.className == 'content-exo-transcription') ) {
+				$('.content-exo-transcription a').click(
+					function(e){
+						e.preventDefault();
+						e.stopPropagation();	
+					}
+				);
+				$('.content-exo-transcription a').each(
+					function(){
+						var $this = $(this);
+						$this.attr('data-placement', 'bottom');
+						$this.attr('data-toggle', 'tooltip');
+						$this.attr('data-trigger', 'hover');
+						$this.attr('title', drupalSettings.disabled_links_text);
+					}
+				);
+				$("[data-toggle=tooltip]").tooltip();
+			}
+    }
+  };
+	
+	// document ready
+	$(document).ready(function() {
+		
+		if (typeof drupalSettings.embed_serie != 'undefined') {
+			$('.field--name-field-consigne a').click(
+				function(e){
+					e.preventDefault();
+					e.stopPropagation();	
+				}
+			);
+			$('.field--name-field-consigne a').each(
+				function(){
+					var $this = $(this);
+					$this.attr('data-placement', 'bottom');
+					$this.attr('data-toggle', 'tooltip');
+					$this.attr('data-trigger', 'hover');
+					$this.attr('title', drupalSettings.disabled_links_text);
+				}
+			);
+		}
+	
+		var is_one_column = false;
+		if($(window).width() <= 768) {
+			is_one_column = true;
+		}
+		else {
+			$('body').addClass('exo-2cols');
+		}
+		var width_group_left = $('.group-left').outerWidth(true);
+		var offset_group_left = $('.group-left').offset();
+		var offset_group_right = $('.group-right').offset();
+		document.documentElement.style.setProperty('--stick-left-width', (Math.round(width_group_left + offset_group_left.left)) + 'px');
+		document.documentElement.style.setProperty('--stick-right-width', (Math.round($(window).width() - offset_group_right.left)) + 'px');
+		
+		$('.group-left').imagesLoaded( function() {
+			// images have loaded
+			$('.group-media').data('hgm', $('.group-media').outerHeight(true));	
+		});
+		
+		// exercise building
+		if(typeof drupalSettings.exercice != 'undefined') {
+			
+			$(".field--name-field-" + drupalSettings.exercice.class_name)[drupalSettings.exercice.type]({
+				exercice_id : drupalSettings.exercice.id,
+				replay_bt_label : Drupal.t('Resume the activity'),
+				solution_bt_label : Drupal.t('Display the solutions'),
+				majuscule_bt_label : Drupal.t('Capitals'),
+				lowercase_bt_label : Drupal.t('Lower case'),
+				validate_bt_label : Drupal.t('Ok'),
+				to_be_corrected_text : Drupal.t('This item had to be corrected'),
+				not_need_to_be_corrected_text : Drupal.t('This item did not need to be corrected'),
+				definition_title : Drupal.t('Definition'),
+				analysis_text : drupalSettings.exercice.analysis_text,
+				ko_title : drupalSettings.exercice.ko_title,
+				ko_text : drupalSettings.exercice.ko_text,
+				ok_title : drupalSettings.exercice.ok_title,
+				ok_text : drupalSettings.exercice.ok_text,
+				solution_title : drupalSettings.exercice.solution_title,
+				solution_text : drupalSettings.exercice.solution_text,
+				json : drupalSettings.exercice.json,
+				enabledAssetClasses : '.media-audio-embed',
+				imageAssetClasse : '.media-image-embed',
+				orientation : drupalSettings.exercice.orientation,
+				display_indice : drupalSettings.exercice.display_indice
+			});
+		}
+		
+		// exo navigation
+		$('.summary-nav').click(function() {
+			var content = $('.exo-nav-wrapper').html();
+      $('#appr_window_content').html(content);
+			$('#appr_window').addClass('modale-nav-exo');
+			var winHeight = $(window).height();
+			var winWidth = $(window).width();
+			var modalHeight = $('#appr_window').outerHeight();
+			var modalWidth = $('#appr_window').outerWidth();
+			var yOffset = window.pageYOffset;	
+			var summaryNavOffset = $('.summary-nav').offset();
+			var posTop = summaryNavOffset.top;
+			var posLeft = summaryNavOffset.left;
+			
+			$('#appr_window').css('top', posTop+'px');
+			$('#appr_window').css('left', posLeft+'px');
+			$('#appr_window, #appr_overlay').show();
+
+			$('.summary-nav-list').click(function() {
+				$('#appr_window, #appr_overlay').hide();
+				$('#appr_window').removeClass();
+				$('#appr_overlay').removeClass();
+				$('#appr_overlay').html('');
+				$('#appr_window_content').html('');
+			});	
+    });
+		
+		// click button exo help
+		$('.btn-exo-help').click(function() {
+			
+			var content = $('.exo-help').html();
+			$('#appr_window_content').html(content);
+			$('#appr_overlay').addClass('loading');
+			$('#appr_overlay').html('<div id="loader"></div>');
+			$('#appr_overlay').show();
+			$('#appr_window_content').imagesLoaded( function() {
+				// images have loaded
+				$('#appr_window').addClass('modale-exo help-exo');
+				$('#appr_window').show();
+				$('#appr_overlay').html('');
+				$('#appr_overlay').removeClass('loading');
+				$('#appr_window').css('top', 0);
+				$('#appr_window').css('left', 0);
+				
+				
+				// diaporama
+				$('#appr_window .galerie-image').slick({
+					rtl: $('html').attr('dir') === 'rtl',
+					infinite: false,
+					slidesToShow: 1,
+					slidesToScroll: 1,
+					dots: true,
+					prevArrow: '<button type="button" class="slick-prev">' + Drupal.t('Previous') + '</button>',
+					nextArrow: '<button type="button" class="slick-next">' + Drupal.t('Next') + '</button>'
+				});
+				
+				var winHeight = $(window).height();
+				var winWidth = $(window).width();     
+				var modalHeight = $('#appr_window').outerHeight();
+				var modalWidth = $('#appr_window').outerWidth();
+				var yOffset = window.pageYOffset;
+				var posTop = (yOffset + winHeight / 2 ) - (modalHeight / 2);
+				if(posTop < 44) {
+					posTop = 44;
+				}
+				var posLeft = (winWidth / 2 ) - ( modalWidth / 2);
+				$('#appr_window').css('top', posTop+'px');
+				$('#appr_window').css('left', posLeft+'px');
+			});
+    });
+		
+		// call ajax for exercice page
+		if((typeof drupalSettings.series_id != 'undefined') && (typeof drupalSettings.path != 'undefined') && (typeof drupalSettings.path.pathPrefix != 'undefined') && (typeof drupalSettings.user != 'undefined') && (typeof drupalSettings.user.uid != 'undefined') && (drupalSettings.user.uid != 0)) {
+			$.ajax({
+				type: "POST",
+				dataType: "json",
+				data: "nid=" + drupalSettings.series_id ,
+				url: "/" + drupalSettings.path.pathPrefix + "ajax-page-exercice",
+				success: function(results){
+					// execute commands
+					var ajaxObject = Drupal.ajax({
+						url: "",
+						base: false,
+						element: false,
+						progress: false
+					});
+					ajaxObject.success(results, "success");
+					
+				}  
+			});
+		}
+		
+		// translation instruction
+		if($('.consigne-translation').length && (typeof drupalSettings.exercice_interface != 'undefined') && (typeof drupalSettings.exercice_interface.tooltip_instruction_translation != 'undefined')) {
+			$('.field--name-dynamic-token-fieldnode-titre-exercice').after('<button type="button" id="exo-instruction-translate" data-placement="bottom" data-toggle="tooltip" data-trigger="hover" title="' + drupalSettings.exercice_interface.tooltip_instruction_translation + '">' + drupalSettings.exercice_interface.tooltip_instruction_translation + '</button>');
+			$('#exo-instruction-translate').click(function() {
+				$(this).blur();
+				if ($(this).hasClass("translation")) {
+					$(this).removeClass("translation");
+					$(".consigne-default").show();
+					$(".consigne-translation").hide();
+				} else {
+					$(this).addClass("translation");
+					$(".consigne-default").hide();
+					$(".consigne-translation").show();
+				}
+			});	
+		}
+		
+		// tooltip audio instruction
+		if($('.field--name-field-consigne-media .audiofield').length && (typeof drupalSettings.exercice_interface != 'undefined') && (typeof drupalSettings.exercice_interface.tooltip_instruction_listen != 'undefined')) {
+			$('.field--name-field-consigne-media .audiofield').attr('data-toggle', 'tooltip');
+			$('.field--name-field-consigne-media .audiofield').attr('data-trigger', 'hover');
+			$('.field--name-field-consigne-media .audiofield').attr('data-placement', 'bottom');
+			$('.field--name-field-consigne-media .audiofield').attr('title', drupalSettings.exercice_interface.tooltip_instruction_listen);
+		}
+			
+		$("[data-toggle=tooltip]").tooltip();
+		
+		// instruction read more button
+		if($('.field--name-field-consigne .consigne-default').length) {
+			var insth = $('.field--name-field-consigne .consigne-default').height();
+			var lineh = parseInt($('.field--name-field-consigne .consigne-default').css('line-height'));
+			if(insth > ((3*lineh) + 3)) {
+				$('.field--name-field-consigne .consigne-default').addClass('long');
+				$('.field--name-field-consigne .consigne-default').css('height', lineh * 3);
+				var $more_button = $('<span></span>')
+					.addClass('more-instruction')
+					.html('<span class="dmi">&nbsp;...&nbsp;</span>' + '<span class="bmi">' + Drupal.t('Read more') + '</span>')
+					.appendTo($('.field--name-field-consigne .consigne-default'))
+					.bind('click', function() {
+						var $this = $(this);
+						if(!$this.parent().hasClass('open')) {
+							$this.parent().addClass('open');
+							$('.bmi').html(Drupal.t('Read less'));
+							$('.field--name-field-consigne .consigne-default').css('height', 'auto');
+						}
+						else {
+							$this.parent().removeClass('open');
+							$('.field--name-field-consigne .consigne-default').css('height', lineh * 3);
+							$('.bmi').html(Drupal.t('Read more'));
+						}
+						
+					});
+			}
+		}
+		
+		
+		
+		// zoom image
+    $("body.page-exercice .field--name-field-media > .field--item > .media--type-image .field--name-field-media-image").hover(
+      function(){
+        $(this).addClass("hover");
+      },
+      function(){
+        $(this).removeClass("hover");
+      }
+    );
+		$('body.page-exercice .field--name-field-media > .field--item > .media--type-image .field--name-field-media-image').click(function(e){
+			var mid = $(this).parent().parent().data('media-id');
+			if (mid) {
+				$.ajax({
+					url: '/ajax-zoom-media-image/' + mid,
+					dataType: 'html',
+					success: function (content) {
+						if(content) {  
+							$('#appr_window_content').html(content);
+							$('#appr_window').addClass('special-zoom');
+							$('#appr_overlay').addClass('special-zoom');
+							$('#appr_overlay').addClass('loading');
+							$('#appr_overlay').html('<div id="loader"></div>');
+							$('#appr_overlay').show();
+							$('#appr_window_content').imagesLoaded( function() {
+								// images have loaded
+								$('#appr_window').show();
+								$('#appr_overlay').html('');
+								$('#appr_overlay').removeClass('loading');
+								$('#appr_window').css('top', 0);
+								$('#appr_window').css('left', 0);
+								
+								var winHeight = $(window).height();
+								var winWidth = $(window).width();     
+								var modalHeight = $('#appr_window').outerHeight();
+								var modalWidth = $('#appr_window').outerWidth();
+								var yOffset = window.pageYOffset;
+								var posTop = (yOffset + winHeight / 2 ) - (modalHeight / 2);
+								if(posTop < 44) {
+									posTop = 44;
+								}
+								var posLeft = (winWidth / 2 ) - ( modalWidth / 2);
+								$('#appr_window').css('top', posTop+'px');
+								$('#appr_window').css('left', posLeft+'px');
+							});           
+						} 
+					}
+				});
+			}   
+    });
+		
+		// help page ?
+		if((typeof(drupalSettings.aide_id) != 'undefined') && (typeof drupalSettings.exercice_interface != 'undefined') && (typeof drupalSettings.path != 'undefined') && (typeof drupalSettings.path.pathPrefix != 'undefined')) {
+			$('.zone-aide').html('<button class="help-page-btn" data-nid="' + drupalSettings.aide_id + '">' + drupalSettings.exercice_interface.btn_help_page + '</button>');
+			if (!$('.wrapper-nav-trans-aide').hasClass('not-empty')) {
+				$('.wrapper-nav-trans-aide').addClass('not-empty');
+			}
+			if (!$('.wrapper-trans-aide').hasClass('not-empty')) {
+				$('.wrapper-trans-aide').addClass('not-empty');
+			}
+			if (!$('.field--name-field-media').hasClass('not-empty')) {
+				$('.field--name-field-media').addClass('not-empty');
+			}
+			
+			$('.help-page-btn').click(function(e){
+				var $this = $(this);
+				// hide help
+				if($this.hasClass('active')) {
+					$('.zone-display-aide').removeClass('show');
+					$this.removeClass('active');					
+				}
+				// show help
+				else {
+					$this.addClass('active');	
+					// hide transcription
+					$('.zone-display-multi-trans li').removeClass('show');
+					$('.trans-btn').removeClass('active');
+					
+					// help already present, show
+					if ($('.zone-display-aide').hasClass('not-empty')) {	
+						$('.zone-display-aide').addClass('show');
+					}
+					// request help
+					else {
+						var $loader = $('<div></div>')
+						  .addClass('loader')
+							.appendTo($('.zone-display-aide'));
+						$('.zone-display-aide').addClass('loading');
+						$('.zone-display-aide').addClass('show');
+						$.ajax({
+							type: "GET",
+							dataType: "json",
+							//data: "wrapper_format=drupal_ajax",
+							//url: "/" + drupalSettings.path.pathPrefix + "ajax-get-aide/" + drupalSettings.aide_id,
+							url: Drupal.url("ajax-get-aide/" + drupalSettings.aide_id),
+							success: function(results){
+								// execute commands
+								var ajaxObject = Drupal.ajax({
+									url: "",
+									base: false,
+									element: false,
+									progress: false
+								});
+								ajaxObject.success(results, "success");
+							}  
+						});
+						
+						/*var endpoint = Drupal.url("ajax-get-aide/" + drupalSettings.aide_id);
+						Drupal.ajax({ 
+							url: endpoint,
+							type: 'GET',	
+						}).execute();*/
+						
+						/*$.ajax({
+							type: "GET",
+							dataType: "html",
+							url: "/" + drupalSettings.path.pathPrefix + "ajax-get-aide/" + drupalSettings.aide_id,
+							success: function(data){
+								$('.zone-display-trans-aide').html(data);	
+								$this.addClass('active');	
+								$('.trans-btn').removeClass('active');							
+							}  
+						});*/
+					}
+				}
+			});	
+		}
+		
+		// multi medias
+		if($('.field--name-field-media > .field--item').length > 1) {
+			var first_media = $('.field--name-field-media > .field--item').eq(0);	
+			// scroller + multi copyright, multi subtitles button, multi trans
+			var scroller = '<div class="scroller-media-wrapper"><div class="multi-current-media"><span class="multi-type-media type-media-' + first_media.data('media-type') + '"><span>' + first_media.data('media-type-title') + '</span>' + ((first_media.data('media-title') != '')?' - ' + first_media.data('media-title'):'') + '</span></div><ul class="scroller-nav list-unstyled">';
+			
+			var multi_copyright = '';
+			var multi_subtitles = '';	
+			var multi_trans = '';	
+			$('.field--name-field-media > .field--item').each(function(index){
+				scroller += '<li><a href="#" id="tomedia' + index + '"' + ((index == 0)?' class="active"':'') + '><span class="multi-type-media type-media-' + $(this).data('media-type') + '"><span>' + $(this).data('media-type-title') + '</span>' + (($(this).data('media-title') != '')?' - ' + $(this).data('media-title'):'') + '</span></a></li>';
+				$(this).addClass('multi-media-item');
+				$(this).addClass('multi-media-item' + index);
+				if (index == 0) {
+					$(this).addClass('active');
+				}
+				if ($(this).find('.field--name-field-media-copyright').length) {
+					multi_copyright += '<li class="multi-media-item multi-media-item' + index + '">' + $(this).find('.field--name-field-media-copyright').html() + '</li>';
+				}
+				if ($(this).data('media-subtitles')) {
+					multi_subtitles += '<li class="multi-media-item multi-media-item' + index + '"><button class="subtitles-btn">' + Drupal.t('Subtitles') + '</button></li>';
+				}	
+				if ($(this).data('media-trans') && (typeof drupalSettings.exercice_interface != 'undefined')) {
+					multi_trans += '<li class="multi-media-item multi-media-item' + index + '"><button class="trans-btn" data-mid="' + $(this).data('media-id') + '">' + drupalSettings.exercice_interface.btn_transcription + '</button></li>';
+				}
+			});
+			// copyright
+			if (multi_copyright != '') {
+				multi_copyright = '<ul class="multi-copyright list-unstyled">' + multi_copyright + '</ul>';
+				$('.zone-multi-copyright').html(multi_copyright);
+				if (!$('.wrapper-multi-copyright').hasClass('not-empty')) {
+					$('.wrapper-multi-copyright').addClass('not-empty');
+				}	
+			}
+			// subtitles button
+			if (multi_subtitles != '') {
+				multi_subtitles = '<ul class="multi-subtitles list-unstyled">' + multi_subtitles + '</ul>';
+				$('.zone-multi-subtitles').html(multi_subtitles);
+				if (!$('.wrapper-multi-copyright').hasClass('not-empty')) {
+					$('.wrapper-multi-copyright').addClass('not-empty');
+				}
+			}
+			//transcription
+			if (multi_trans != '') {
+				multi_trans = '<ul class="multi-trans list-unstyled">' + multi_trans + '</ul>';
+				$('.zone-multi-trans').html(multi_trans);
+				if (!$('.wrapper-nav-trans-aide').hasClass('not-empty')) {
+					$('.wrapper-nav-trans-aide').addClass('not-empty');
+				}
+				if (!$('.wrapper-trans-aide').hasClass('not-empty')) {
+					$('.wrapper-trans-aide').addClass('not-empty');
+				}
+			}
+			
+			// nav scroller
+			scroller += '</ul></div>';
+			$('.zone-multi-media-nav').html(scroller);
+			
+			if (!$('.wrapper-nav-trans-aide').hasClass('not-empty')) {
+				$('.wrapper-nav-trans-aide').addClass('not-empty');
+			}	
+			if (!$('.zone-multi-media-nav').hasClass('not-empty')) {
+				$('.zone-multi-media-nav').addClass('not-empty');
+			}
+			$('.multi-media-item').hide();
+			$('.multi-media-item0').show();
+			// nav with the scroller
+			$('.scroller-nav li a').click(function() {
+				var id = $(this).attr("id").substring(7);
+				// pause jwplayer
+				if($('.multi-media-item.active' ).find('.video_player.tv5monde_player').length) {
+					var jwplayer_id = $('.multi-media-item.active').find('.video_player.tv5monde_player').data('guid');
+					var player_active = TV5MondePlayer.get(jwplayer_id);
+					if(typeof(player_active) != 'undefined' &&  (typeof player_active.paused === 'function') && (!player_active.paused())) player_active.pause();
+				}
+				// stop jplayer
+				if($('.multi-media-item.active' ).find('.jp-jplayer').length) {
+					$('.multi-media-item.active' ).find('.jp-jplayer').jPlayer('stop');
+				}	
+				// hide help
+				$('.zone-display-aide').removeClass('show');
+				$('.help-page-btn').removeClass('active');
+				// hide transcription
+				$('.zone-display-multi-trans li').removeClass('show');
+				$('.trans-btn').removeClass('active');
+				
+				$('.multi-media-item').removeClass('active');
+				$('.multi-media-item' + id).addClass('active');
+				$('.scroller-nav li a').removeClass('active');
+				$(this).addClass('active');
+				$('.scroller-media-wrapper').removeClass('open');
+				$('.multi-current-media').html($(this).html());
+					
+				$('.multi-media-item').hide();
+				$('.multi-media-item' + id).show();
+				if(!is_one_column) {
+					// update data group-media height
+					$('.group-media').data('hgm', $('.group-media').outerHeight(true));
+					// trigger scroll to update var --trans-help-height	
+					$(window).scroll();
+				}
+				
+				return false;
+			});
+			// open scroller
+			$('.multi-current-media	').click(function() {
+				$('.scroller-media-wrapper').addClass('open');	
+			});		
+		}
+		// 1 media
+		else if(($('.field--name-field-media > .field--item').length == 1) && ($('.field--name-field-media > .field--item').data('media-type') != 'galerie')) {
+			// move copyright if any
+			if ($('.field--name-field-media > .field--item').find('.field--name-field-media-copyright').length) {
+				var multi_copyright = '<ul class="multi-copyright list-unstyled"><li>' + $('.field--name-field-media > .field--item').find('.field--name-field-media-copyright').html() + '</li></ul>';
+				$('.zone-multi-copyright').html(multi_copyright);
+				if (!$('.wrapper-multi-copyright').hasClass('not-empty')) {
+					$('.wrapper-multi-copyright').addClass('not-empty');
+				}
+			}
+			// subtitles button ?
+			if ($('.field--name-field-media > .field--item').data('media-subtitles')) {
+				$('.zone-multi-subtitles').html('<ul class="multi-subtitles list-unstyled"><li><button class="subtitles-btn">' + Drupal.t('Subtitles') + '</button></li></ul>');
+				if (!$('.wrapper-multi-copyright').hasClass('not-empty')) {
+					$('.wrapper-multi-copyright').addClass('not-empty');
+				}
+			}
+			// transcription ?
+			if ($('.field--name-field-media > .field--item').data('media-trans') && (typeof drupalSettings.exercice_interface != 'undefined')) {
+				$('.zone-multi-trans').html('<ul class="multi-trans list-unstyled"><li><button class="trans-btn" data-mid="' + $('.field--name-field-media > .field--item').data('media-id') + '">' + drupalSettings.exercice_interface.btn_transcription + '</button></li></ul>');
+				if (!$('.wrapper-nav-trans-aide').hasClass('not-empty')) {
+					$('.wrapper-nav-trans-aide').addClass('not-empty');
+				}
+				if (!$('.wrapper-trans-aide').hasClass('not-empty')) {
+					$('.wrapper-trans-aide').addClass('not-empty');
+				}	
+			}			
+		}
+		
+		// gallery media
+		if(($('.field--name-field-media > .field--item').length == 1) && ($('.field--name-field-media > .field--item').data('media-type') == 'galerie')) {
+			// move copyright
+			var multi_copyright = '';	
+			$('.media--type-galerie .field--name-field-media-media-image .field--items > .field--item').each(function(index){
+				if ($(this).find('.field--name-field-media-copyright').length) {
+					multi_copyright += '<li class="multi-media-item multi-media-item' + index + ((index == 0)?' active':'') +'">' + $(this).find('.field--name-field-media-copyright').html() + '</li>';
+				}
+			});
+			// copyright
+			if (multi_copyright != '') {
+				multi_copyright = '<ul class="multi-copyright media-galerie list-unstyled">' + multi_copyright + '</ul>';
+				$('.zone-multi-copyright').html(multi_copyright);
+				if (!$('.wrapper-multi-copyright').hasClass('not-empty')) {
+					$('.wrapper-multi-copyright').addClass('not-empty');
+				}	
+			}
+			// add some classes
+			if (!$('.wrapper-trans-aide').hasClass('not-empty')) {
+				$('.wrapper-trans-aide').addClass('not-empty');
+			}
+			if (!$('.wrapper-nav-trans-aide').hasClass('not-empty')) {
+				$('.wrapper-nav-trans-aide').addClass('not-empty');
+			}
+			if (!$('.wrapper-trans-aide').hasClass('with-diapo')) {
+				$('.wrapper-trans-aide').addClass('with-diapo');
+			}
+			if (!$('.field--name-field-media').hasClass('not-empty')) {
+				$('.field--name-field-media').addClass('not-empty');
+			}
+			
+			
+			// init diaporama
+			$('.media--type-galerie.media--view-mode-exercice > .field--name-field-media-media-image > .field--items').slick({
+				rtl: $('html').attr('dir') === 'rtl',
+				dots: true,
+				infinite: true,
+				slidesToShow: 1,
+				slidesToScroll: 1,
+				arrows: false,
+				autoplay: false,
+				autoplaySpeed: 3000,
+				appendDots: $('.wrapper-trans-aide')
+			});
+			/*$('.media--type-galerie.media--view-mode-exercice ul.slick-dots button').click(function() {
+				$('.media--type-galerie.media--view-mode-exercice > .field--name-field-media-media-image > .field--items').slick('slickPause');
+			});*/
+			// play, pause buttons
+			var $diapoPause = $('<button></button>')
+			  .addClass('slick-pause active')
+				.html(Drupal.t('Pause'))
+				.prependTo($('.wrapper-trans-aide'))
+				.bind('click', function() {
+					var $this = $(this);
+					if(!$this.hasClass('active')) {
+						$('.media--type-galerie.media--view-mode-exercice > .field--name-field-media-media-image > .field--items').slick('slickPause');
+						$this.addClass('active');
+						$('.slick-play').removeClass('active');
+					}
+				});
+			var $diapoPlay = $('<button></button>')
+			  .addClass('slick-play')
+				.html(Drupal.t('Play'))
+				.prependTo($('.wrapper-trans-aide'))
+				.bind('click', function() {
+					var $this = $(this);
+					if(!$this.hasClass('active')) {
+						$('.media--type-galerie.media--view-mode-exercice > .field--name-field-media-media-image > .field--items').slick('slickPlay');
+						$this.addClass('active');
+						$('.slick-pause').removeClass('active');
+					}
+				});
+		
+			// change copyright with diaporama
+			$('.media--type-galerie.media--view-mode-exercice > .field--name-field-media-media-image > .field--items').on('afterChange', function(event, slick, currentSlide){
+				$('.multi-copyright .multi-media-item').removeClass('active');
+				$('.multi-copyright .multi-media-item' + currentSlide).addClass('active');
+			});
+			
+		}	
+		
+		// click transcription button
+		$('.trans-btn').click(function(e){
+			var $this = $(this);
+			// hide transcription
+			if($this.hasClass('active')) {
+				$('li.transcription-mid-' + $this.data('mid')).removeClass('show');
+				$this.removeClass('active');					
+			}
+			// show transcription
+			else {
+				$this.addClass('active');	
+				// hide help
+				$('.zone-display-aide').removeClass('show');
+				$('.help-page-btn').removeClass('active');
+				
+				// transcription already present, show
+				if ($('li.transcription-mid-' + $this.data('mid')).length) {
+					$('li.transcription-mid-' + $this.data('mid')).addClass('show');
+				}
+				// request transcription
+				else {
+					var $li = $('<li></li>')
+					  .addClass('transcription-mid-' + $this.data('mid'))
+						.addClass('loading')
+						.addClass('show')
+						.attr('data-media-id', $this.data('mid'))
+						.appendTo($('.zone-display-multi-trans ul'));
+					var $loader = $('<div></div>')
+						.addClass('loader')
+						.appendTo($('li.transcription-mid-' + $this.data('mid')));
+					$.ajax({
+						type: "GET",
+						dataType: "json",
+						url: Drupal.url("ajax-get-transcription/" + $this.data('mid')),
+						success: function(results){
+							// execute commands
+							var ajaxObject = Drupal.ajax({
+								url: "",
+								base: false,
+								element: false,
+								progress: false
+							});
+							ajaxObject.success(results, "success");								
+						}  
+					});
+				}	
+			}
+		});
+
+		// click subtitles button
+		$('.subtitles-btn').click(function() {
+			
+			var content = '';
+			if((typeof drupalSettings.exercice_interface != 'undefined') && (typeof drupalSettings.exercice_interface.subtitles_modale != 'undefined')) {
+				content = drupalSettings.exercice_interface.subtitles_modale;
+			}
+			$('#appr_window_content').html(content);
+			$('#appr_overlay').addClass('loading');
+			$('#appr_overlay').html('<div id="loader"></div>');
+			$('#appr_overlay').show();
+			$('#appr_window_content').imagesLoaded( function() {
+				// images have loaded
+				$('#appr_window').addClass('modale-exo subtitles-exo');
+				$('#appr_window').show();
+				$('#appr_overlay').html('');
+				$('#appr_overlay').removeClass('loading');
+				$('#appr_window').css('top', 0);
+				$('#appr_window').css('left', 0);
+				
+				var winHeight = $(window).height();
+				var winWidth = $(window).width();     
+				var modalHeight = $('#appr_window').outerHeight();
+				var modalWidth = $('#appr_window').outerWidth();
+				var yOffset = window.pageYOffset;
+				var posTop = (yOffset + winHeight / 2 ) - (modalHeight / 2);
+				if(posTop < 44) {
+					posTop = 44;
+				}
+				var posLeft = (winWidth / 2 ) - ( modalWidth / 2);
+				$('#appr_window').css('top', posTop+'px');
+				$('#appr_window').css('left', posLeft+'px');
+			});
+		});	
+		
+		// scroll
+		if(!is_one_column && $('.group-media .field--name-field-media').length) {
+			var gm_position = $('.group-media').position();
+			var hgr_position = $('.group-right > div').position();
+			var gm_width = $('.group-media').width();
+			var wheight = $(window).outerHeight(true);
+			var havailable = wheight - 96;
+			$('.group-media').data('postop', 0);
+			$(window).scroll(function () {
+				var scrolltop = $(window).scrollTop();
+				var hgm = parseInt($('.group-media').data('hgm'));
+				var hgr = $('.group-right > div').outerHeight(true);
+				// keep space if help or transcription
+				if($('.wrapper-trans-aide').hasClass('not-empty')) {
+					hgm = hgm + 120;
+				}
+				// diff group-media and group-right > div
+				var diff_gm_hgr = 0;
+				if(gm_position.top >= hgr_position.top) {
+					diff_gm_hgr = gm_position.top - hgr_position.top;
+				}
+				else {
+					diff_gm_hgr = hgrposition.top - gm_position.top;
+				}
+				
+				/*console.log('scrolltop : ' + scrolltop);
+				console.log('group right div height : ' + hgr);	
+				console.log('group media pos top : ' + gm_position.top);
+				console.log('group right div pos top : ' + hgr_position.top);
+				console.log('havailable : ' + havailable);
+				console.log('diff_gm_hgr : ' + diff_gm_hgr);*/
+				
+				// max height for transcription and help page (media is scroll to top, enough height available)
+				if(!$("body").hasClass("thh-set") && (scrolltop > gm_position.top) && (havailable >= hgm)) {
+					$("body").addClass("thh-set");
+					document.documentElement.style.setProperty('--trans-help-height', Math.round(havailable - parseInt($('.group-media').data('hgm')) - parseInt($('.wrapper-multi-copyright').outerHeight(true))) + 'px');
+				}
+
+				// fixed (not already fixed, group right need scroll after media is scroll to top, media is scroll to top, enough height available)
+				if(!$("body").hasClass("media-exo-fixed") && ((hgr - diff_gm_hgr) > havailable) && (scrolltop > gm_position.top) && (havailable >= hgm)) {
+					$("body").addClass("media-exo-fixed");
+					$('.group-media').css('width', gm_width);
+					$('.group-media').css('max-height', havailable);
+					$('.group-media').data('postop', gm_position.top);
+					document.documentElement.style.setProperty('--trans-help-height', Math.round(havailable - parseInt($('.group-media').data('hgm')) - parseInt($('.wrapper-multi-copyright').outerHeight(true))) + 'px');
+				}
+				// reset fixed
+				if($("body").hasClass("media-exo-fixed") && ($('.group-media').data('postop') != 0) && (scrolltop <= parseInt($('.group-media').data('postop')))) {
+					$("body").removeClass("media-exo-fixed");
+					$('.group-media').data('postop', 0);
+					$('.group-media').css('width', 'auto');
+					$('.group-media').css('max-height', 'none');
+					document.documentElement.style.setProperty('--trans-help-height', 'none');
+				}
+			});
+		}	
+		
+	});
+
+  // We pass the parameters of this anonymous function are the global variables
+  // that this script depend on. For example, if the above script requires
+  // jQuery, you should change (Drupal) to (Drupal, jQuery) in the line below
+  // and, in this file's first line of JS, change function (Drupal) to
+  // (Drupal, $)
+})(Drupal, jQuery);

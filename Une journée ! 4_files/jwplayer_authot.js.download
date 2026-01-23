@@ -1,0 +1,32 @@
+/**
+ * @file
+ * A JavaScript file for the theme.
+ *
+ * In order for this JavaScript to be loaded on pages, see the instructions in
+ * the README.txt next to this file.
+ */
+
+function jwplayer_authot(jw_id, trans_id) {
+  //var vid = jQuery('#'+jw_id+' .jw-video')[0];
+	var vid = jQuery('#'+jw_id+' video')[0];
+	if(typeof(vid) != undefined) {
+		vid.ontimeupdate = function() {
+			jQuery('#'+trans_id+' span.word').each(function(i) {
+				jQuery(this).attr("style", "");
+				if (vid.currentTime >= parseFloat(jQuery(this).attr("start")) &&
+				vid.currentTime < parseFloat(jQuery(this).attr("end"))) {
+					jQuery(this).attr("style", "background: linear-gradient(180deg,rgba(255,255,255,0) 25%, #a4dae8 25%);")
+				}
+			});
+		};
+		jQuery('#'+trans_id+' span.word').click(function() {
+			var end_time, start_time;
+			start_time = jQuery(this).attr('start');
+			end_time = jQuery(this).attr('end');
+			vid.currentTime = parseFloat(start_time);
+			if (vid.apaused) {
+				return vid.pause();
+			}
+		});
+	}
+}

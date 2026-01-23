@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="/images/zoo-favicon.jpg" type="image/x-icon">
+    <title>Animal Playing Card</title>
+    <!--Internal css goes here-->
+
+    <style>
+        /* This is the style block for internal css styling*/
+        body {
+            /*Styles the entire page background*/
+            background-color: #f0f0f0; /* light gray background color*/
+            font-family: Arial, sans-serif; /* sets the font for the webpage*/
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        div {
+            background-color: white;
+            width: 300px;
+            min-height: 500px;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            text-align: center;
+        }
+
+        h2 {
+            color: #d84315;
+            margin-top: 0;
+            font-size: 28px;
+        }
+
+        img {
+            width: 100%;
+            max-height: 250px;
+            object-fit: cover;
+            /*border: 5px solid black;*/
+            border-radius: 10px;
+            margin: 10px o;
+        }
+
+        h4 {
+            color: #555;
+            font-style: italic;
+            margin: 10px 0;
+            font-size: 16px;
+        }
+
+        p {
+            color: #333;
+            font-size: 14px;
+            line-height: 1.6;
+            text-align: left;
+            margin 15px 0;
+        }
+
+        button, a {
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 14px;
+            font-weight: bold;
+            border: none;
+            text-decoration: none;
+            display: block;
+            margin: 10px 0;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        a {
+            background-color: #4caf50;
+            color: white;
+            cursor: pointer;
+        }
+
+        a:hover {
+            background-color: #45a049;
+        }
+
+        button {
+            background-color: #2196f3;
+            color: white;
+            cursor: no-drop;
+        }
+
+        button:hover {
+            background-color: #0b7dda;
+        }
+
+        button:disabled {
+            background-color: yellow;
+            color: #666;
+            cursor: not-allowed;
+        }
+
+         button:disabled:hover {
+            background-color: #ccc
+        }
+    </style>
+</head>
+<body>
+    <!--Main Heading of website (h1)
+    <center><h1>ANIMAL PLAYING CARDS</h1></center>-->
+
+    <!--A div for the first animal-->
+    <div>
+        <!--Name of animal (h2)-->
+        <h2>Red Panda</h2>
+
+        <!--Image of the animal-->
+        <img src="/images/red-panda.png" alt="Red Panda">
+
+        <!--Scientific name italicized (h4)-->
+        <h4>Ailurus fulgens</h4>
+
+        <!--Description of the animal (p)-->
+        <p>The Red Panda is a small mammal native to the eastern Himalayas and southwestern China. Despite its name, it is not closely related to the giant panda. Red pandas are excellent climbers and spend most of their time in trees.</p>
+
+        <!--Learn more (button) which is a link (a) to a wikipedia article about the animal-->
+        <a href="https://en.wikipedia.org/wiki/Red_panda" target="_blank">Learn more</a>
+
+        <!--View documentary (button) which is a link to a youtube video-->
+        <a href="https://youtu.be/jtOesnWNrjI?si=C4CPMpuzCIw6HznW" target="_blank">View documentary</a>
+
+        <!--Animal gallery (button) which is a link (a)-->
+        <button><span title="Coming soon, under construction!">Gallery</span></button>
+
+
+        <!--Animal sound (button) which is disabled and with a tool tip-->
+        <button disabled><span title="Coming soon, under construction!">Animal sound</span></button>
+    </div>
+    <!--Footer-->
+    <footer></footer>
+</body>
+</html>

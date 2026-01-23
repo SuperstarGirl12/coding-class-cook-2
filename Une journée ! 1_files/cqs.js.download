@@ -1,0 +1,310 @@
+/**
+ * @file
+ * A JavaScript file
+ */
+
+// JavaScript should be made compatible with libraries other than jQuery by
+// wrapping it with an "anonymous closure". See:
+// - https://drupal.org/node/1446420
+// - http://www.adequatelygood.com/2010/3/JavaScript-Module-Pattern-In-Depth
+(function (Drupal, $) { 
+
+  'use strict';
+	
+	var cqsResetHeaderMenu = function() {
+		$('#block-mainnavigation .menu-level-0 > li').removeClass('opened');
+		$('#block-mainnavigation .menu-level-1 > li').removeClass('opened');
+		$('.navbar-default .inner-header').removeClass('open lg-open ma-open');
+		$('#block-mainnavigation .menu-level-1').removeClass('ml1-open');
+		if($(window).width() >= 1024) {
+			$('#block-mainnavigation .menu-level-1').css('height', 'auto');
+			$('#block-mainnavigation .menu-level-2').css('height', 'auto');
+		}	
+	}
+
+  // To understand behaviors, see https://drupal.org/node/756722#behaviors
+  Drupal.behaviors.cqs_behavior = {
+    attach: function (context, settings) {
+		}
+  };
+	
+	// document ready
+	$(document).ready(function() {
+		var searchRequest = null;
+
+		// custom quick search navbar
+		$(".navbar-default input[id^=edit-search-api-fulltext]").attr('autocomplete', 'off');
+		$(".navbar-default input[id^=edit-search-api-fulltext]").focus(function() {
+			var $this = $(this);
+			$('.main-container .nav-backdrop').remove();
+			cqsResetHeaderMenu();
+			var drpback = $('<div class="nav-backdrop" aria-hidden="true"></div>');
+			$('.main-container').append(drpback);
+			// click onto nav-backdrop
+			$('.main-container .nav-backdrop').on('click', function () {
+				$('.container-quick-search').remove();
+				$('.main-container .nav-backdrop').remove();
+				cqsResetHeaderMenu();
+			});
+			
+			if (searchRequest != null) {
+				searchRequest.abort();
+			}  
+			searchRequest = $.ajax({
+				type: 'POST',
+				url: "/" + drupalSettings.path.currentLanguage + "/ajax-custom-quick-search",
+				dataType: 'html',
+				success: function(content) {
+					if(content) {
+						$('body').append('<div class="container-quick-search">' + content + '</div>');
+						var inputOffset = $this.offset();
+						var winWidth = $(window).width();
+						var inputHeight = $this.outerHeight();
+						var inputWidth = $this.outerWidth();
+						var modaleWidth = $('.container-quick-search').outerWidth();
+						var posTop = inputOffset.top + inputHeight + 37;
+						var posLeft = inputOffset.left;
+						var posRight = winWidth - inputOffset.left - inputWidth;
+						if((modaleWidth + posLeft) > winWidth) {
+							// try right
+							if((modaleWidth + posRight) <= winWidth) {
+								$('.container-quick-search').css('right', posRight);
+							}
+							else {
+								$('.container-quick-search').css('left', 10);
+								$('.container-quick-search').css('width', winWidth - 20);
+							}
+							 
+						}
+						else {
+							$('.container-quick-search').css('left', posLeft);
+						}
+						
+						$('.container-quick-search').css('top', posTop);
+					}           
+				},
+				complete: function() {
+					var keyword = $this.val();
+					if(keyword != '') {
+						$.ajax({
+							type: 'POST',
+							url: "/" + drupalSettings.path.currentLanguage + "/ajax-custom-quick-search",
+							data: "keyword=" + keyword,
+							dataType: 'html',
+							beforeSend: function() { $('.container-quick-search').addClass('search-loading'); },
+							success: function (content) {
+								$('.container-quick-search').removeClass('search-loading');
+								if(content) {
+									$('.container-quick-search').html(content);
+								}
+							}
+						});
+					}
+				}  
+			});
+		});
+		
+		$(".navbar-default input[id^=edit-search-api-fulltext]").blur(function(e){
+        var remove_focus = true;
+        if((e.relatedTarget == null) || ((e.relatedTarget !== null)  && (e.relatedTarget.className) !== null && (e.relatedTarget.className.indexOf('quick-search-link') !== -1))) {
+          remove_focus = false;
+        }
+        if(remove_focus) {
+          $('.container-quick-search').remove();
+					$('.main-container .nav-backdrop').remove();
+					cqsResetHeaderMenu();
+        }
+      });
+			
+		$(".navbar-default input[id^=edit-search-api-fulltext]").keyup(function(e){
+			var $this = $(this);
+			if (!e) {
+				e = window.event;
+			}
+			switch (e.keyCode) {
+				case 16: // Shift.
+				case 17: // Ctrl.
+				case 18: // Alt.
+				case 20: // Caps lock.
+				case 33: // Page up.
+				case 34: // Page down.
+				case 35: // End.
+				case 36: // Home.
+				case 37: // Left arrow.
+				case 38: // Up arrow.
+				case 39: // Right arrow.
+				case 40: // Down arrow.
+					return true;
+
+				case 9:  // Tab.
+				case 13: // Enter.
+				case 27: // Esc.
+					return true;
+
+				default: // All other keys.
+					var keyword = $this.val();
+					if (searchRequest != null) {
+						searchRequest.abort();
+					} 
+					
+					if (this.timer) {
+						clearTimeout(this.timer);
+					}
+					this.timer = setTimeout(function () {
+						searchRequest = $.ajax({
+							type: 'POST',
+							url: "/" + drupalSettings.path.currentLanguage + "/ajax-custom-quick-search",
+							data: "keyword=" + keyword,
+							dataType: 'html',
+							beforeSend: function() { $('.container-quick-search').addClass('search-loading'); },
+							success: function (content) {
+								$('.container-quick-search').removeClass('search-loading');
+								if(content) {
+									$('.container-quick-search').html(content);
+								}
+							}
+						});
+					}, 300);               
+				return true;
+			} 
+		});
+		
+		// custom quick search, search page
+		$(".wrapper-region-header-search input[id^=edit-search-api-fulltext]").attr('autocomplete', 'off');
+		$(".wrapper-region-header-search input[id^=edit-search-api-fulltext]").focus(function() {
+			var $this = $(this);
+			
+			if (searchRequest != null) {
+				searchRequest.abort();
+			}  
+			searchRequest = $.ajax({
+				type: 'POST',
+				url: "/" + drupalSettings.path.currentLanguage + "/ajax-custom-quick-search",
+				dataType: 'html',
+				success: function(content) {
+					if(content) {
+						$('body').append('<div class="container-quick-search">' + content + '</div>');
+						var inputOffset = $this.offset();
+						var winWidth = $(window).width();
+						var inputHeight = $this.outerHeight();
+						var inputWidth = $this.outerWidth();
+						var modaleWidth = $('.container-quick-search').outerWidth();
+						var posTop = inputOffset.top + inputHeight + 17;
+						var posLeft = inputOffset.left;
+						var posRight = winWidth - inputOffset.left - inputWidth;
+						if((modaleWidth + posLeft) > winWidth) {
+							// try right
+							if((modaleWidth + posRight) <= winWidth) {
+								$('.container-quick-search').css('right', posRight);
+							}
+							else {
+								$('.container-quick-search').css('left', 10);
+								$('.container-quick-search').css('width', winWidth - 20);
+							}
+							 
+						}
+						else {
+							$('.container-quick-search').css('left', posLeft);
+						}
+						
+						$('.container-quick-search').css('top', posTop);
+					}           
+				},
+				complete: function() {
+					var keyword = $this.val();
+					if(keyword != '') {
+						$.ajax({
+							type: 'POST',
+							url: "/" + drupalSettings.path.currentLanguage + "/ajax-custom-quick-search",
+							data: "keyword=" + keyword,
+							dataType: 'html',
+							beforeSend: function() { $('.container-quick-search').addClass('search-loading'); },
+							success: function (content) {
+								$('.container-quick-search').removeClass('search-loading');
+								if(content) {
+									$('.container-quick-search').html(content);
+								}
+							}
+						});
+					}
+				}  
+			});
+		});
+		
+		$(".wrapper-region-header-search input[id^=edit-search-api-fulltext]").blur(function(e){
+        var remove_focus = true;
+        if((e.relatedTarget == null) || ((e.relatedTarget !== null)  && (e.relatedTarget.className) !== null && (e.relatedTarget.className.indexOf('quick-search-link') !== -1))) {
+          remove_focus = false;
+        }
+        if(remove_focus) {
+          $('.container-quick-search').remove();
+        }
+      });
+		
+		$('.dialog-off-canvas-main-canvas').click(function(e) {
+			if($('.container-quick-search').length && !$('.nav-backdrop').length) {
+				$('.container-quick-search').remove();	
+			}
+		})
+		
+		$(".wrapper-region-header-search input[id^=edit-search-api-fulltext]").keyup(function(e){
+			var $this = $(this);
+			if (!e) {
+				e = window.event;
+			}
+			switch (e.keyCode) {
+				case 16: // Shift.
+				case 17: // Ctrl.
+				case 18: // Alt.
+				case 20: // Caps lock.
+				case 33: // Page up.
+				case 34: // Page down.
+				case 35: // End.
+				case 36: // Home.
+				case 37: // Left arrow.
+				case 38: // Up arrow.
+				case 39: // Right arrow.
+				case 40: // Down arrow.
+					return true;
+
+				case 9:  // Tab.
+				case 13: // Enter.
+				case 27: // Esc.
+					return true;
+
+				default: // All other keys.
+					var keyword = $this.val();
+					if (searchRequest != null) {
+						searchRequest.abort();
+					} 
+					
+					if (this.timer) {
+						clearTimeout(this.timer);
+					}
+					this.timer = setTimeout(function () {
+						searchRequest = $.ajax({
+							type: 'POST',
+							url: "/" + drupalSettings.path.currentLanguage + "/ajax-custom-quick-search",
+							data: "keyword=" + keyword,
+							dataType: 'html',
+							beforeSend: function() { $('.container-quick-search').addClass('search-loading'); },
+							success: function (content) {
+								$('.container-quick-search').removeClass('search-loading');
+								if(content) {
+									$('.container-quick-search').html(content);
+								}
+							}
+						});
+					}, 300);               
+				return true;
+			} 
+		});
+		
+	});
+
+  // We pass the parameters of this anonymous function are the global variables
+  // that this script depend on. For example, if the above script requires
+  // jQuery, you should change (Drupal) to (Drupal, jQuery) in the line below
+  // and, in this file's first line of JS, change function (Drupal) to
+  // (Drupal, $)
+})(Drupal, jQuery);

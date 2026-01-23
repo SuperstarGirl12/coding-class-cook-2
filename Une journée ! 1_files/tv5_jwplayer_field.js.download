@@ -1,0 +1,26 @@
+/**
+ * @file
+ */
+(function($) {
+
+  "use strict";
+
+  $(document).ready(function() {
+		if(typeof drupalSettings.tv5_jwplayer_field != 'undefined') {
+			var jwplayer_players = drupalSettings.tv5_jwplayer_field.players;
+			if (typeof jwplayer_players != 'undefined') {
+				for (var k in jwplayer_players){
+					var player = TV5MondePlayer.get(k);
+					if (typeof player != 'undefined') {
+    				// authot
+       			if(typeof jwplayer_authot == 'function') {
+							player.on('ready', function() {
+								jwplayer_authot("ldr-guid-" + k);
+							});   
+						}
+					} 	 
+				}
+			}
+		}
+	});	
+})(jQuery);

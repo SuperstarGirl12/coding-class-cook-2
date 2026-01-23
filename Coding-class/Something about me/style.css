@@ -1,0 +1,50 @@
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background-color: #f0f0f0;
+    font-family: Arial, sans-serif;
+}
+
+.name-tag {
+    width: 350px; /* Width of the name tag */
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+
+   .photo {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+.details {
+    text-align: center;
+}
+
+.full-name {
+    font-size: 1.8em;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+.designation {
+    font-size: 1.1em;
+    color: #555;
+    margin-bottom: 10px;
+}
+
+.school {
+    font-size: 1em;
+    color: #007bff;
+    font-style: italic;
+}
